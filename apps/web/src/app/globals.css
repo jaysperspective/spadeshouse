@@ -1,0 +1,260 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 15, 23, 42;
+  --background-end-rgb: 30, 41, 59;
+  /* iOS safe area insets */
+  --sat: env(safe-area-inset-top);
+  --sar: env(safe-area-inset-right);
+  --sab: env(safe-area-inset-bottom);
+  --sal: env(safe-area-inset-left);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+html {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for iOS */
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  padding-top: var(--sat);
+  padding-bottom: var(--sab);
+  padding-left: var(--sal);
+  padding-right: var(--sar);
+}
+
+/* Prevent text selection on game elements */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Card styling */
+.card {
+  @apply bg-white text-gray-900 rounded-lg shadow-md flex items-center justify-center font-bold select-none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.card-sm {
+  @apply min-w-[36px] min-h-[50px] text-xs p-1;
+}
+
+.card-md {
+  @apply min-w-[44px] min-h-[62px] text-sm p-1.5;
+}
+
+.card-lg {
+  @apply min-w-[52px] min-h-[72px] text-base p-2;
+}
+
+@media (min-width: 640px) {
+  .card-sm {
+    @apply min-w-[40px] min-h-[56px] text-sm;
+  }
+  .card-md {
+    @apply min-w-[50px] min-h-[70px] text-lg;
+  }
+  .card-lg {
+    @apply min-w-[60px] min-h-[84px] text-xl;
+  }
+}
+
+.card-red {
+  @apply text-red-600;
+}
+
+.card-black {
+  @apply text-gray-900;
+}
+
+.card-back {
+  @apply bg-blue-800 border-2 border-blue-600;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(255,255,255,0.1) 10px,
+    rgba(255,255,255,0.1) 20px
+  );
+}
+
+/* Felt table background */
+.bg-felt {
+  @apply bg-green-800;
+  background-image:
+    radial-gradient(ellipse at center, rgba(34, 197, 94, 0.2) 0%, transparent 70%);
+}
+
+.border-felt-dark {
+  @apply border-green-900;
+}
+
+/* Seat positions */
+.seat {
+  @apply absolute p-4 rounded-lg bg-slate-800/50 backdrop-blur-sm;
+}
+
+.seat-north {
+  @apply top-4 left-1/2 -translate-x-1/2;
+}
+
+.seat-south {
+  @apply bottom-4 left-1/2 -translate-x-1/2;
+}
+
+.seat-east {
+  @apply right-4 top-1/2 -translate-y-1/2;
+}
+
+.seat-west {
+  @apply left-4 top-1/2 -translate-y-1/2;
+}
+
+/* Button styles - larger touch targets for mobile */
+.btn {
+  @apply px-4 py-3 rounded-xl font-semibold transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed select-none;
+  min-height: 44px; /* iOS minimum touch target */
+  touch-action: manipulation;
+}
+
+.btn:active:not(:disabled) {
+  @apply scale-95;
+}
+
+.btn-sm {
+  @apply px-3 py-2 text-sm rounded-lg;
+  min-height: 36px;
+}
+
+.btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white;
+}
+
+.btn-secondary {
+  @apply bg-slate-600 hover:bg-slate-700 active:bg-slate-800 text-white;
+}
+
+.btn-success {
+  @apply bg-green-600 hover:bg-green-700 active:bg-green-800 text-white;
+}
+
+.btn-danger {
+  @apply bg-red-600 hover:bg-red-700 active:bg-red-800 text-white;
+}
+
+/* Input styles - larger for mobile */
+.input {
+  @apply px-4 py-3 rounded-xl bg-slate-700 text-white border border-slate-600 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50;
+  min-height: 44px;
+  font-size: 16px; /* Prevents iOS zoom on focus */
+}
+
+/* Animation for current turn indicator */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px theme('colors.yellow.400'), 0 0 10px theme('colors.yellow.400');
+  }
+  50% {
+    box-shadow: 0 0 10px theme('colors.yellow.400'), 0 0 20px theme('colors.yellow.400');
+  }
+}
+
+.current-turn {
+  animation: pulse-glow 2s infinite;
+}
+
+/* Mobile-specific scrollable areas */
+.mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Hide scrollbars on mobile but keep functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Bottom sheet style for mobile panels */
+.bottom-sheet {
+  @apply fixed bottom-0 left-0 right-0 bg-slate-800 rounded-t-2xl shadow-2xl;
+  padding-bottom: var(--sab);
+  max-height: 70vh;
+  max-height: 70dvh;
+}
+
+/* Collapsible panel header */
+.panel-header {
+  @apply flex items-center justify-between p-3 cursor-pointer;
+  touch-action: manipulation;
+}
+
+.panel-header::before {
+  content: '';
+  @apply absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-slate-600 rounded-full;
+}
+
+/* Card fan layout for mobile hand */
+.card-fan {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem;
+  overflow-x: auto;
+  gap: 0.125rem;
+}
+
+.card-fan > * {
+  flex-shrink: 0;
+  margin-left: -0.5rem;
+}
+
+.card-fan > *:first-child {
+  margin-left: 0;
+}
+
+@media (min-width: 640px) {
+  .card-fan {
+    gap: 0.25rem;
+  }
+  .card-fan > * {
+    margin-left: -0.25rem;
+  }
+}
+
+/* Pulse animation for your turn indicator */
+@keyframes pulse-border {
+  0%, 100% {
+    border-color: theme('colors.yellow.400');
+  }
+  50% {
+    border-color: theme('colors.yellow.600');
+  }
+}
+
+.your-turn-pulse {
+  animation: pulse-border 1s infinite;
+}

@@ -1,0 +1,27 @@
+{
+  "name": "spades-house-rules",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n web,ws -c blue,green \"npm run dev:web\" \"npm run dev:ws\"",
+    "dev:web": "npm run dev -w apps/web",
+    "dev:ws": "npm run dev -w apps/ws",
+    "build": "npm run build -w packages/shared && npm run build -w packages/rules && npm run build -w packages/engine && npm run build -w apps/ws && npm run build -w apps/web",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.55.0",
+    "eslint-config-next": "^14.0.4",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.0"
+  }
+}
