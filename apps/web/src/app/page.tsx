@@ -8,7 +8,7 @@ import { Lobby } from '@/components/Lobby';
 import { GameTable } from '@/components/GameTable';
 import { PlayerHand } from '@/components/PlayerHand';
 import { BiddingPanel } from '@/components/BiddingPanel';
-import { Chat } from '@/components/Chat';
+import { Chat, InlineChat } from '@/components/Chat';
 import { Scoreboard } from '@/components/Scoreboard';
 import { RedealOffer } from '@/components/RedealOffer';
 import { HandEndSummary } from '@/components/HandEndSummary';
@@ -200,7 +200,7 @@ export default function Home() {
       {/* Main game area - fills available space */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Game table */}
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 px-2 pt-2 sm:px-4 sm:pt-3">
           <GameTable
             roomState={roomState}
             mySeat={mySeat}
@@ -212,7 +212,7 @@ export default function Home() {
 
         {/* Bidding panel */}
         {isBidding && mySeat && roomState.hand && (
-          <div className="flex-shrink-0 px-3 py-2">
+          <div className="flex-shrink-0 px-2 py-1.5 sm:px-3 sm:py-2">
             <BiddingPanel
               roomState={roomState}
               mySeat={mySeat}
@@ -224,30 +224,30 @@ export default function Home() {
 
         {/* Player's hand - during bidding (view only) */}
         {isBidding && hand && mySeat && (
-          <div className="flex-shrink-0 bg-slate-800/90 backdrop-blur-sm border-t border-slate-700">
-            <div className="px-3 py-1 text-xs text-slate-400">
+          <div className="flex-shrink-0 bg-slate-800 border-t border-slate-700">
+            <div className="px-2 py-0.5 text-[10px] sm:text-xs text-slate-400">
               Your Hand ({hand.length})
             </div>
-            <div className="card-fan hide-scrollbar pb-2">
+            <div className="card-fan hide-scrollbar pb-2 sm:pb-3">
               {hand.map((card, i) => (
                 <Card
                   key={`${card.rank}-${card.suit}-${i}`}
                   card={card}
-                  size="sm"
+                  size="md"
                 />
               ))}
             </div>
           </div>
         )}
 
-        {/* Player's hand - during play */}
+        {/* Player's hand - during play (directly under table) */}
         {hand && mySeat && isPlaying && (
-          <div className="flex-shrink-0 bg-slate-800/90 backdrop-blur-sm border-t border-slate-700">
-            <div className="px-3 py-1 flex justify-between items-center">
-              <span className="text-xs text-slate-400">Your Hand ({hand.length})</span>
+          <div className="flex-shrink-0 bg-slate-800 border-t border-slate-700">
+            <div className="px-2 py-0.5 flex justify-between items-center">
+              <span className="text-[10px] sm:text-xs text-slate-400">Your Hand ({hand.length})</span>
               {isMyTurn && (
-                <span className="text-xs text-yellow-400 animate-pulse font-medium">
-                  Tap card twice to play
+                <span className="text-[10px] sm:text-xs text-yellow-400 animate-pulse font-medium">
+                  Tap twice to play
                 </span>
               )}
             </div>
@@ -259,15 +259,31 @@ export default function Home() {
           </div>
         )}
 
-        {/* Chat toggle button - fixed at bottom right during lobby */}
-        {isLobby && (
+        {/* Inline chat during play - fills remaining space */}
+        {isPlaying && roomState.hand && (
+          <div className="flex-1 flex flex-col min-h-0">
+            <InlineChat
+              messages={chatMessages}
+              onSendMessage={sendChat}
+              teamStates={roomState.hand.teamStates}
+            />
+          </div>
+        )}
+
+        {/* Chat toggle button - during lobby or bidding */}
+        {(isLobby || isBidding) && (
           <button
             onClick={() => setShowChat(true)}
-            className="fixed bottom-4 right-4 btn btn-primary rounded-full w-14 h-14 flex items-center justify-center shadow-lg"
+            className="fixed bottom-4 right-4 btn btn-primary rounded-full w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center shadow-lg z-40"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 sm:w-6 sm:h-6">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
             </svg>
+            {chatMessages.length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center">
+                {Math.min(chatMessages.length, 99)}
+              </span>
+            )}
           </button>
         )}
       </main>

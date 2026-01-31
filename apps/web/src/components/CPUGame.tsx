@@ -367,6 +367,171 @@ function CPUBiddingPanel({ isMyTurn, onSubmitBid }: CPUBiddingPanelProps) {
 }
 
 // ============================================
+// Game Chat (CPU Bots have personality!)
+// ============================================
+
+interface CPUGameLogProps {
+  completedBooks: Array<{
+    plays: Array<{ seat: Seat; card: CardType }>;
+    winner: Seat;
+  }>;
+  currentBook: Array<{ seat: Seat; card: CardType }>;
+  teamStates: {
+    NS: { bid: number; booksWon: number };
+    EW: { bid: number; booksWon: number };
+  };
+}
+
+// Fun bot reactions based on game events
+function getBotReaction(event: string, _seat: Seat): string | null {
+  const reactions: Record<string, string[]> = {
+    won_book: [
+      "Nice! 💪",
+      "Got it!",
+      "Easy money",
+      "That's mine!",
+      "📚",
+    ],
+    lost_book: [
+      "Dang...",
+      "Next time",
+      "😤",
+      "Ugh",
+      "Lucky...",
+    ],
+    cut_book: [
+      "CUT! ✂️",
+      "Ruff! 🐕",
+      "No spades? No problem!",
+      "Trump card!",
+    ],
+    got_cut: [
+      "Nooo my ace!",
+      "Brutal...",
+      "😭",
+      "That hurts",
+    ],
+    big_play: [
+      "Boom! 💥",
+      "Take that!",
+      "Big spade energy",
+      "👀",
+    ],
+  };
+
+  const options = reactions[event];
+  if (!options) return null;
+  return options[Math.floor(Math.random() * options.length)] ?? null;
+}
+
+interface ChatMessage {
+  id: number;
+  seat: Seat;
+  text: string;
+  isSystem?: boolean;
+}
+
+function CPUGameLog({ completedBooks, currentBook: _currentBook, teamStates }: CPUGameLogProps) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const lastBookCountRef = useRef(0);
+  const messageIdRef = useRef(0);
+
+  const getSeatName = (seat: Seat): string => {
+    const names: Record<Seat, string> = { N: 'CPU North', E: 'CPU East', S: 'You', W: 'CPU West' };
+    return names[seat];
+  };
+
+  const getTeamColor = (seat: Seat): string => {
+    return seat === 'N' || seat === 'S' ? 'text-green-400' : 'text-blue-400';
+  };
+
+  // Generate bot reactions when books complete
+  useEffect(() => {
+    if (completedBooks.length > lastBookCountRef.current) {
+      const newBook = completedBooks[completedBooks.length - 1];
+      if (newBook) {
+        const winner = newBook.winner;
+        const winnerIsBot = winner !== 'S';
+
+        // Bot who won might comment
+        if (winnerIsBot) {
+          const reaction = getBotReaction('won_book', winner);
+          if (reaction && Math.random() > 0.4) {
+            const newMsg: ChatMessage = {
+              id: ++messageIdRef.current,
+              seat: winner,
+              text: reaction,
+            };
+            setMessages(prev => [...prev.slice(-10), newMsg]);
+          }
+        }
+
+        // Check for cuts (spade played when lead was different suit)
+        const leadSuit = newBook.plays[0]?.card.suit;
+        const winningPlay = newBook.plays.find(p => p.seat === winner);
+        if (winningPlay && winningPlay.card.suit === 'spades' && leadSuit !== 'spades') {
+          // Someone cut!
+          if (winnerIsBot) {
+            const reaction = getBotReaction('cut_book', winner);
+            if (reaction && Math.random() > 0.5) {
+              setTimeout(() => {
+                setMessages(prev => [...prev.slice(-10), {
+                  id: ++messageIdRef.current,
+                  seat: winner,
+                  text: reaction!,
+                }]);
+              }, 500);
+            }
+          }
+        }
+      }
+      lastBookCountRef.current = completedBooks.length;
+    }
+  }, [completedBooks]);
+
+  return (
+    <div className="flex flex-col h-full bg-slate-900/50 border-t border-slate-700">
+      {/* Header */}
+      <div className="flex-shrink-0 px-3 py-1.5 border-b border-slate-700/50 flex justify-between items-center">
+        <span className="text-[10px] sm:text-xs text-slate-400 font-medium">💬 Game Chat</span>
+        <div className="flex gap-3 text-[10px] sm:text-xs">
+          <span className="text-green-400">NS: {teamStates.NS.booksWon}/{teamStates.NS.bid}</span>
+          <span className="text-blue-400">EW: {teamStates.EW.booksWon}/{teamStates.EW.bid}</span>
+        </div>
+      </div>
+
+      {/* Chat messages */}
+      <div
+        className="flex-1 overflow-y-auto px-2 py-1.5 space-y-1"
+        style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))' }}
+      >
+        {messages.length === 0 ? (
+          <div className="text-center text-slate-600 text-[10px] sm:text-xs py-2">
+            Bots will react as the game progresses...
+          </div>
+        ) : (
+          messages.map((msg) => (
+            <div key={msg.id} className="flex items-start gap-1.5">
+              <span className={`text-[10px] sm:text-xs font-medium ${getTeamColor(msg.seat)}`}>
+                {getSeatName(msg.seat).replace('CPU ', '')}:
+              </span>
+              <span className="text-[10px] sm:text-xs text-slate-300">{msg.text}</span>
+            </div>
+          ))
+        )}
+
+        {/* Book progress summary */}
+        <div className="pt-2 mt-2 border-t border-slate-700/50">
+          <div className="text-[10px] sm:text-xs text-slate-500">
+            Books played: {completedBooks.length}/13
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
 // CPU Game Setup Screen
 // ============================================
 
@@ -671,45 +836,53 @@ export function CPUGame({ onExit, initialPlayerName = 'You' }: CPUGameProps) {
           </div>
         )}
 
-        {/* Player's hand area - fills bottom of screen */}
-        <div className="flex-1 flex flex-col justify-end">
-          {/* Player's hand - during bidding (view only) */}
-          {isBidding && humanHand && (
-            <div className="bg-slate-800 border-t border-slate-700">
-              <div className="px-2 py-0.5 text-[10px] sm:text-xs text-slate-400 flex justify-between">
-                <span>Your Hand ({humanHand.length})</span>
-              </div>
-              <div className="card-fan hide-scrollbar pb-2 sm:pb-3">
-                {humanHand.map((card, i) => (
-                  <Card
-                    key={`${card.rank}-${card.suit}-${i}`}
-                    card={card}
-                    size="md"
-                  />
-                ))}
-              </div>
+        {/* Player's hand - during bidding (view only) */}
+        {isBidding && humanHand && (
+          <div className="flex-shrink-0 bg-slate-800 border-t border-slate-700">
+            <div className="px-2 py-0.5 text-[10px] sm:text-xs text-slate-400 flex justify-between">
+              <span>Your Hand ({humanHand.length})</span>
             </div>
-          )}
+            <div className="card-fan hide-scrollbar pb-2 sm:pb-3">
+              {humanHand.map((card, i) => (
+                <Card
+                  key={`${card.rank}-${card.suit}-${i}`}
+                  card={card}
+                  size="md"
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
-          {/* Player's hand - during play */}
-          {humanHand && isPlaying && (
-            <div className="bg-slate-800 border-t border-slate-700">
-              <div className="px-2 py-0.5 flex justify-between items-center">
-                <span className="text-[10px] sm:text-xs text-slate-400">Your Hand ({humanHand.length})</span>
-                {isHumanTurn && (
-                  <span className="text-[10px] sm:text-xs text-yellow-400 animate-pulse font-medium">
-                    Tap twice to play
-                  </span>
-                )}
-              </div>
-              <CPUPlayerHand
-                cards={humanHand}
-                isMyTurn={isHumanTurn}
-                onPlayCard={handlePlayCard}
-              />
+        {/* Player's hand - during play (directly under table) */}
+        {humanHand && isPlaying && (
+          <div className="flex-shrink-0 bg-slate-800 border-t border-slate-700">
+            <div className="px-2 py-0.5 flex justify-between items-center">
+              <span className="text-[10px] sm:text-xs text-slate-400">Your Hand ({humanHand.length})</span>
+              {isHumanTurn && (
+                <span className="text-[10px] sm:text-xs text-yellow-400 animate-pulse font-medium">
+                  Tap twice to play
+                </span>
+              )}
             </div>
-          )}
-        </div>
+            <CPUPlayerHand
+              cards={humanHand}
+              isMyTurn={isHumanTurn}
+              onPlayCard={handlePlayCard}
+            />
+          </div>
+        )}
+
+        {/* Game Activity Log - fills remaining space during play */}
+        {isPlaying && roomState.hand && (
+          <div className="flex-1 flex flex-col min-h-0">
+            <CPUGameLog
+              completedBooks={roomState.hand.completedBooks}
+              currentBook={roomState.hand.currentBook}
+              teamStates={roomState.hand.teamStates}
+            />
+          </div>
+        )}
       </main>
 
       {/* Score modal */}

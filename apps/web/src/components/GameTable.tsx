@@ -26,7 +26,7 @@ export function GameTable({ roomState, mySeat, onTakeSeat, onLeaveSeat, onReady 
   };
 
   return (
-    <div className="relative w-full aspect-[4/3] max-h-[45vh] sm:max-h-[50vh] bg-felt rounded-xl border-4 border-felt-dark mx-auto">
+    <div className="relative w-full aspect-[4/3] max-h-[40vh] sm:max-h-[45vh] bg-felt rounded-xl border-4 border-felt-dark mx-auto">
       {/* North seat */}
       <div className="absolute top-1 sm:top-2 left-1/2 -translate-x-1/2 z-10">
         <SeatDisplay
