@@ -56,13 +56,9 @@ function CPUGameTable({ thinking, thinkingSeat }: CPUGameTableProps) {
     return labels[seat];
   };
 
-  const getTeamLabel = (seat: Seat): string => {
-    return seat === 'N' || seat === 'S' ? 'NS' : 'EW';
-  };
-
   return (
-    <div className="relative w-full aspect-[4/3] max-h-[35vh] sm:max-h-[40vh] bg-felt rounded-xl border-4 border-felt-dark mx-auto">
-      {/* Seat displays */}
+    <div className="relative w-full aspect-[4/3] max-h-[40vh] sm:max-h-[45vh] bg-felt rounded-xl border-4 border-felt-dark mx-auto">
+      {/* Seat displays - more compact on mobile */}
       {(['N', 'E', 'S', 'W'] as Seat[]).map((seat) => {
         const seatState = roomState.seats[seat];
         const isCurrentTurn = roomState.hand?.currentTurn === seat;
@@ -71,41 +67,38 @@ function CPUGameTable({ thinking, thinkingSeat }: CPUGameTableProps) {
         const isThinking = thinking && thinkingSeat === seat;
 
         const positionClass = {
-          N: 'absolute top-1 sm:top-2 left-1/2 -translate-x-1/2 z-10',
-          S: 'absolute bottom-1 sm:bottom-2 left-1/2 -translate-x-1/2 z-10',
-          W: 'absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-10',
-          E: 'absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-10',
+          N: 'absolute top-0.5 sm:top-2 left-1/2 -translate-x-1/2 z-10',
+          S: 'absolute bottom-0.5 sm:bottom-2 left-1/2 -translate-x-1/2 z-10',
+          W: 'absolute left-0.5 sm:left-2 top-1/2 -translate-y-1/2 z-10',
+          E: 'absolute right-0.5 sm:right-2 top-1/2 -translate-y-1/2 z-10',
         }[seat];
 
         return (
           <div key={seat} className={positionClass}>
             <div
               className={`
-                px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg bg-slate-800/90 backdrop-blur-sm text-center
-                min-w-[60px] sm:min-w-[80px]
+                px-1.5 py-1 sm:px-3 sm:py-2 rounded-lg bg-slate-800/90 backdrop-blur-sm text-center
+                min-w-[50px] sm:min-w-[80px]
                 ${isCurrentTurn ? 'current-turn border-2 border-yellow-400' : 'border border-slate-600'}
                 ${isMySeat ? 'ring-2 ring-blue-500' : ''}
               `}
             >
-              <div className="font-semibold text-white text-xs sm:text-sm truncate max-w-[60px] sm:max-w-[80px]">
-                {seatState.playerName || getSeatLabel(seat)}
-              </div>
-              <div className="text-[10px] sm:text-xs text-slate-400">
-                {getTeamLabel(seat)}
+              <div className="font-semibold text-white text-[10px] sm:text-sm truncate max-w-[50px] sm:max-w-[80px]">
+                {isMySeat ? 'You' : (seatState.playerName || getSeatLabel(seat).replace('CPU ', ''))}
               </div>
 
-              {/* Show bid if submitted */}
-              {bid !== undefined && (
-                <div className="mt-0.5 sm:mt-1 text-xs sm:text-sm">
-                  <span className="text-slate-400">Bid: </span>
-                  <span className="font-bold text-white">{bid}</span>
+              {/* Show bid inline with name on mobile */}
+              {bid !== undefined ? (
+                <div className="text-[10px] sm:text-xs">
+                  <span className={seat === 'N' || seat === 'S' ? 'text-green-400' : 'text-blue-400'}>
+                    {bid}
+                  </span>
                 </div>
-              )}
-
-              {/* Thinking indicator */}
-              {isThinking && (
-                <div className="text-[10px] sm:text-xs text-yellow-400 mt-1 animate-pulse">
-                  Thinking...
+              ) : isThinking ? (
+                <div className="text-[10px] sm:text-xs text-yellow-400 animate-pulse">...</div>
+              ) : (
+                <div className="text-[10px] sm:text-xs text-slate-500">
+                  {seat === 'N' || seat === 'S' ? 'NS' : 'EW'}
                 </div>
               )}
             </div>
@@ -115,23 +108,23 @@ function CPUGameTable({ thinking, thinkingSeat }: CPUGameTableProps) {
 
       {/* Center area */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="relative w-32 h-24 sm:w-40 sm:h-32">
+        <div className="relative w-28 h-20 sm:w-40 sm:h-32">
           {/* Status text during bidding */}
           {roomState.phase === 'BIDDING' && (
             <div className="absolute inset-0 flex items-center justify-center text-slate-300 text-center">
-              <div className="bg-slate-900/80 px-4 py-2 rounded-xl">
-                <div className="text-base sm:text-lg font-bold">Bidding</div>
+              <div className="bg-slate-900/80 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl">
+                <div className="text-sm sm:text-lg font-bold">Bidding</div>
                 {thinking && thinkingSeat ? (
-                  <div className="text-sm sm:text-base text-yellow-400 animate-pulse font-medium">
-                    {getSeatLabel(thinkingSeat)} bidding...
+                  <div className="text-xs sm:text-base text-yellow-400 animate-pulse font-medium">
+                    {getSeatLabel(thinkingSeat).replace('CPU ', '')}...
                   </div>
                 ) : roomState.hand?.currentTurn === 'S' ? (
-                  <div className="text-sm sm:text-base text-green-400 font-medium">
-                    Your turn to bid
+                  <div className="text-xs sm:text-base text-green-400 font-medium">
+                    Your turn
                   </div>
                 ) : (
-                  <div className="text-[10px] sm:text-xs">
-                    Waiting for {roomState.hand?.currentTurn}
+                  <div className="text-[10px] sm:text-xs text-slate-400">
+                    Waiting...
                   </div>
                 )}
               </div>
@@ -141,13 +134,13 @@ function CPUGameTable({ thinking, thinkingSeat }: CPUGameTableProps) {
           {/* Spades broken indicator */}
           {roomState.hand?.spadesBroken && roomState.phase === 'PLAYING' && currentBook.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-yellow-400 text-xs sm:text-sm">Spades Broken</span>
+              <span className="text-yellow-400 text-[10px] sm:text-sm bg-slate-900/60 px-2 py-0.5 rounded">Spades Broken</span>
             </div>
           )}
 
           {/* Lead suit indicator */}
           {roomState.phase === 'PLAYING' && currentBook.length > 0 && (
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 sm:-translate-y-6 text-[10px] sm:text-xs text-slate-400">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3 sm:-translate-y-6 text-[9px] sm:text-xs text-slate-400">
               Lead: {roomState.hand?.leadSuit || 'Joker'}
             </div>
           )}
@@ -164,15 +157,9 @@ function CPUGameTable({ thinking, thinkingSeat }: CPUGameTableProps) {
         </div>
       </div>
 
-      {/* CPU Game indicator */}
-      <div className="absolute top-1 left-1 sm:top-2 sm:left-2 bg-slate-800/90 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-[10px] sm:text-xs z-20">
-        <div className="text-slate-400">Mode</div>
-        <div className="font-bold text-yellow-400">vs CPU</div>
-      </div>
-
-      {/* Books won indicator */}
+      {/* Books won indicator - only during play */}
       {roomState.phase === 'PLAYING' && roomState.hand && (
-        <div className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 bg-slate-800/90 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-[10px] sm:text-xs z-20">
+        <div className="absolute bottom-0.5 right-0.5 sm:bottom-2 sm:right-2 bg-slate-800/90 px-1 py-0.5 sm:px-2 sm:py-1 rounded text-[9px] sm:text-xs z-20">
           <div className="text-green-400">NS: {roomState.hand.teamStates.NS.booksWon}/{roomState.hand.teamStates.NS.bid}</div>
           <div className="text-blue-400">EW: {roomState.hand.teamStates.EW.booksWon}/{roomState.hand.teamStates.EW.bid}</div>
         </div>
@@ -624,69 +611,59 @@ export function CPUGame({ onExit, initialPlayerName = 'You' }: CPUGameProps) {
   const isBidding = roomState.phase === 'BIDDING';
 
   return (
-    <div className="min-h-screen min-h-[100dvh] flex flex-col no-select">
-      {/* Header */}
-      <header className="flex-shrink-0 flex justify-between items-center px-3 py-2 bg-slate-900/80 backdrop-blur-sm border-b border-slate-700">
-        <div className="flex items-center gap-2">
-          <h1 className="text-lg font-bold">Spades</h1>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-600">
-            vs CPU
-          </span>
+    <div className="min-h-screen min-h-[100dvh] flex flex-col no-select bg-slate-900">
+      {/* Header - Compact for mobile */}
+      <header className="flex-shrink-0 flex justify-between items-center px-2 py-1.5 sm:px-3 sm:py-2 bg-slate-900/95 backdrop-blur-sm border-b border-slate-700">
+        {/* Left: Score display */}
+        <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
+          <span className="text-green-400 font-bold">{roomState.teamGameStates.NS.score}</span>
+          <span className="text-slate-500">-</span>
+          <span className="text-blue-400 font-bold">{roomState.teamGameStates.EW.score}</span>
+          <span className="text-slate-500 text-[10px] sm:text-xs">/ {roomState.targetScore}</span>
         </div>
 
-        {/* Persistent Score Display */}
-        <div className="flex items-center gap-3 text-sm">
-          <div className="flex items-center gap-1.5">
-            <span className="text-green-400 font-medium">NS:</span>
-            <span className="font-bold">{roomState.teamGameStates.NS.score}</span>
-          </div>
-          <div className="text-slate-500">|</div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-blue-400 font-medium">EW:</span>
-            <span className="font-bold">{roomState.teamGameStates.EW.score}</span>
-          </div>
-          <div className="text-slate-500 text-xs">/ {roomState.targetScore}</div>
-        </div>
+        {/* Center: Speed toggle */}
+        <button
+          onClick={toggleFastMode}
+          className={`text-[10px] sm:text-xs px-2 py-1 rounded-full ${fastMode ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300'}`}
+          title="Toggle speed"
+        >
+          {fastMode ? '⚡ Fast' : '🐢 Normal'}
+        </button>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={toggleFastMode}
-            className={`btn btn-sm ${fastMode ? 'btn-primary' : 'btn-secondary'}`}
-            title="Toggle fast CPU mode"
-          >
-            {fastMode ? 'Fast' : 'Normal'}
-          </button>
+        {/* Right: Action buttons */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             onClick={() => setShowScore(true)}
-            className="btn btn-sm btn-secondary"
+            className="text-[10px] sm:text-xs px-2 py-1 rounded bg-slate-700 text-slate-300"
           >
-            Details
+            📊
           </button>
           <button
             onClick={() => setShowRules(true)}
-            className="btn btn-sm btn-secondary"
+            className="text-[10px] sm:text-xs px-2 py-1 rounded bg-slate-700 text-slate-300"
           >
-            Rules
+            📖
           </button>
           <button
             onClick={handleExit}
-            className="btn btn-sm btn-danger"
+            className="text-[10px] sm:text-xs px-2 py-1 rounded bg-red-600/80 text-white"
           >
-            Exit
+            ✕
           </button>
         </div>
       </header>
 
-      {/* Main game area */}
+      {/* Main game area - fills remaining space */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Game table */}
-        <div className="flex-shrink-0">
+        {/* Game table - centered with padding */}
+        <div className="flex-shrink-0 px-2 pt-2 sm:px-4 sm:pt-3">
           <CPUGameTable thinking={thinking} thinkingSeat={thinkingSeat} />
         </div>
 
         {/* Bidding panel */}
         {isBidding && (
-          <div className="flex-shrink-0 px-3 py-2">
+          <div className="flex-shrink-0 px-2 py-1.5 sm:px-3 sm:py-2">
             <CPUBiddingPanel
               isMyTurn={isHumanTurn}
               onSubmitBid={handleSubmitBid}
@@ -694,42 +671,45 @@ export function CPUGame({ onExit, initialPlayerName = 'You' }: CPUGameProps) {
           </div>
         )}
 
-        {/* Player's hand - during bidding (view only) */}
-        {isBidding && humanHand && (
-          <div className="flex-shrink-0 bg-slate-800/90 backdrop-blur-sm border-t border-slate-700">
-            <div className="px-3 py-1 text-xs text-slate-400">
-              Your Hand ({humanHand.length})
+        {/* Player's hand area - fills bottom of screen */}
+        <div className="flex-1 flex flex-col justify-end">
+          {/* Player's hand - during bidding (view only) */}
+          {isBidding && humanHand && (
+            <div className="bg-slate-800 border-t border-slate-700">
+              <div className="px-2 py-0.5 text-[10px] sm:text-xs text-slate-400 flex justify-between">
+                <span>Your Hand ({humanHand.length})</span>
+              </div>
+              <div className="card-fan hide-scrollbar pb-2 sm:pb-3">
+                {humanHand.map((card, i) => (
+                  <Card
+                    key={`${card.rank}-${card.suit}-${i}`}
+                    card={card}
+                    size="md"
+                  />
+                ))}
+              </div>
             </div>
-            <div className="card-fan hide-scrollbar pb-2">
-              {humanHand.map((card, i) => (
-                <Card
-                  key={`${card.rank}-${card.suit}-${i}`}
-                  card={card}
-                  size="sm"
-                />
-              ))}
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* Player's hand - during play */}
-        {humanHand && isPlaying && (
-          <div className="flex-shrink-0 bg-slate-800/90 backdrop-blur-sm border-t border-slate-700">
-            <div className="px-3 py-1 flex justify-between items-center">
-              <span className="text-xs text-slate-400">Your Hand ({humanHand.length})</span>
-              {isHumanTurn && (
-                <span className="text-xs text-yellow-400 animate-pulse font-medium">
-                  Tap card twice to play
-                </span>
-              )}
+          {/* Player's hand - during play */}
+          {humanHand && isPlaying && (
+            <div className="bg-slate-800 border-t border-slate-700">
+              <div className="px-2 py-0.5 flex justify-between items-center">
+                <span className="text-[10px] sm:text-xs text-slate-400">Your Hand ({humanHand.length})</span>
+                {isHumanTurn && (
+                  <span className="text-[10px] sm:text-xs text-yellow-400 animate-pulse font-medium">
+                    Tap twice to play
+                  </span>
+                )}
+              </div>
+              <CPUPlayerHand
+                cards={humanHand}
+                isMyTurn={isHumanTurn}
+                onPlayCard={handlePlayCard}
+              />
             </div>
-            <CPUPlayerHand
-              cards={humanHand}
-              isMyTurn={isHumanTurn}
-              onPlayCard={handlePlayCard}
-            />
-          </div>
-        )}
+          )}
+        </div>
       </main>
 
       {/* Score modal */}
