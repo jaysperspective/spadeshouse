@@ -37,7 +37,6 @@ body {
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
   padding-top: var(--sat);
-  padding-bottom: var(--sab);
   padding-left: var(--sal);
   padding-right: var(--sar);
 }
@@ -224,7 +223,7 @@ body {
   display: flex;
   justify-content: center;
   padding: 0.5rem;
-  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: 0.75rem;
   overflow-x: auto;
   gap: 0.125rem;
 }
@@ -260,4 +259,9 @@ body {
 
 .your-turn-pulse {
   animation: pulse-border 1s infinite;
+}
+
+/* Safe area utility for bottom nav */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }

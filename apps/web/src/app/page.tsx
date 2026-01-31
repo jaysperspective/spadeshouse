@@ -161,42 +161,18 @@ export default function Home() {
   const isRedealOffer = roomState.phase === 'REDEAL_OFFER';
   const isGameEnd = roomState.phase === 'GAME_END';
   const isHandEnd = roomState.phase === 'HAND_END';
-  const isLobby = roomState.phase === 'LOBBY';
 
   return (
     <div className="min-h-screen min-h-[100dvh] flex flex-col no-select">
-      {/* Header - compact on mobile */}
-      <header className="flex-shrink-0 flex justify-between items-center px-3 py-2 bg-slate-900/80 backdrop-blur-sm border-b border-slate-700">
+      {/* Minimal header - just title and team badge */}
+      <header className="flex-shrink-0 flex justify-center items-center px-3 py-1.5 bg-slate-900/80 backdrop-blur-sm border-b border-slate-700">
         <div className="flex items-center gap-2">
-          <h1 className="text-lg font-bold">Spades</h1>
+          <h1 className="text-base font-bold">Spades</h1>
           {mySeat && (
             <span className={`text-xs px-2 py-0.5 rounded-full ${myTeam === 'NS' ? 'bg-green-600' : 'bg-blue-600'}`}>
               {mySeat} ({myTeam})
             </span>
           )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowScore(true)}
-            className="btn btn-sm btn-secondary"
-          >
-            Score
-          </button>
-          <button
-            onClick={() => setShowProfile(true)}
-            className="btn btn-sm btn-secondary flex items-center gap-1"
-          >
-            {userBadges.equippedBadgeId && (
-              <EquippedBadgeDisplay />
-            )}
-            Profile
-          </button>
-          <button
-            onClick={() => setShowRules(true)}
-            className="btn btn-sm btn-secondary"
-          >
-            Rules
-          </button>
         </div>
       </header>
 
@@ -276,23 +252,61 @@ export default function Home() {
           </div>
         )}
 
-        {/* Chat toggle button - during lobby or bidding */}
-        {(isLobby || isBidding) && (
+      </main>
+
+      {/* Bottom Navigation Bar */}
+      <nav className="flex-shrink-0 bg-slate-900 border-t border-slate-700 safe-area-bottom">
+        <div className="flex justify-around items-center py-2">
+          <button
+            onClick={() => setShowScore(true)}
+            className="flex flex-col items-center gap-0.5 px-4 py-1 text-slate-400 hover:text-white transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+            </svg>
+            <span className="text-[10px]">Score</span>
+          </button>
+
           <button
             onClick={() => setShowChat(true)}
-            className="fixed bottom-4 right-4 btn btn-primary rounded-full w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center shadow-lg z-40"
+            className="flex flex-col items-center gap-0.5 px-4 py-1 text-slate-400 hover:text-white transition-colors relative"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 sm:w-6 sm:h-6">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
             </svg>
+            <span className="text-[10px]">Chat</span>
             {chatMessages.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center">
-                {Math.min(chatMessages.length, 99)}
+              <span className="absolute top-0 right-2 bg-red-500 text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center">
+                {Math.min(chatMessages.length, 9)}
               </span>
             )}
           </button>
-        )}
-      </main>
+
+          <button
+            onClick={() => setShowProfile(true)}
+            className="flex flex-col items-center gap-0.5 px-4 py-1 text-slate-400 hover:text-white transition-colors"
+          >
+            {userBadges.equippedBadgeId ? (
+              <EquippedBadgeDisplay />
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+            )}
+            <span className="text-[10px]">Profile</span>
+          </button>
+
+          <button
+            onClick={() => setShowRules(true)}
+            className="flex flex-col items-center gap-0.5 px-4 py-1 text-slate-400 hover:text-white transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+            </svg>
+            <span className="text-[10px]">Rules</span>
+          </button>
+        </div>
+      </nav>
 
       {/* Score modal */}
       {showScore && (
