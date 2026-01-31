@@ -78,6 +78,7 @@ export class CPUGameController {
         reconnectToken: '',
         ready: true,
         connected: true,
+        isCPU: seat !== HUMAN_SEAT,
       };
 
       this.state.seats[seat].playerId = playerId;

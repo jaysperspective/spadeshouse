@@ -25,6 +25,8 @@ import {
   toPublicRoomState,
   getPlayerSeat,
   createPersistence,
+  calculateBotBid,
+  chooseBotCard,
   type SideEffect,
 } from '@spades/engine';
 import { calculateHandResults } from '@spades/rules';
@@ -135,8 +137,117 @@ function processSideEffects(roomCode: string, sideEffects: SideEffect[]): void {
       case 'GAME_OVER':
         console.log(`Game over in room ${roomCode}: ${effect.winner} wins (${effect.reason})`);
         break;
+      case 'PROCESS_CPU_TURN':
+        // CPU turn processing is handled separately
+        break;
     }
   }
+
+  // After processing effects, check if it's a CPU's turn
+  processCPUTurnIfNeeded(roomCode);
+}
+
+/**
+ * Check if it's a CPU player's turn and process their action.
+ */
+function processCPUTurnIfNeeded(roomCode: string): void {
+  const room = rooms.get(roomCode);
+  if (!room || !room.hand) return;
+
+  const currentTurn = room.hand.currentTurn;
+  if (!currentTurn) return;
+
+  const seatState = room.seats[currentTurn];
+  if (!seatState.player?.isCPU) return;
+
+  // Add a small delay to make CPU actions feel more natural
+  setTimeout(() => {
+    processCPUTurn(roomCode, currentTurn);
+  }, 800 + Math.random() * 400);
+}
+
+/**
+ * Process a CPU player's turn (bid or play card).
+ */
+function processCPUTurn(roomCode: string, seat: Seat): void {
+  const room = rooms.get(roomCode);
+  if (!room || !room.hand) return;
+
+  // Verify it's still this CPU's turn
+  if (room.hand.currentTurn !== seat) return;
+
+  const seatState = room.seats[seat];
+  if (!seatState.player?.isCPU) return;
+
+  const playerId = seatState.playerId!;
+
+  if (room.phase === 'BIDDING') {
+    // Calculate CPU bid
+    const hand = room.hand.hands[seat];
+    const partnerSeat = getPartnerSeat(seat);
+    const partnerBid = room.hand.bids[partnerSeat] ?? null;
+
+    const bid = calculateBotBid(hand, partnerBid, room.mode);
+
+    const { state: newState, result } = gameReducer(room, {
+      type: 'SUBMIT_BID',
+      playerId,
+      bid,
+    });
+
+    if (result.success) {
+      rooms.set(roomCode, newState);
+      processSideEffects(roomCode, result.sideEffects || []);
+    }
+  } else if (room.phase === 'PLAYING') {
+    // Calculate CPU card play
+    const hand = room.hand.hands[seat];
+    const team = getTeam(seat);
+    const opponentTeam = team === 'NS' ? 'EW' : 'NS';
+
+    const card = chooseBotCard({
+      hand,
+      currentBook: room.hand.currentBook,
+      completedBooks: room.hand.completedBooks,
+      bids: room.hand.bids,
+      teamBooksWon: room.hand.teamStates[team].booksWon,
+      opponentBooksWon: room.hand.teamStates[opponentTeam].booksWon,
+      spadesBroken: room.hand.spadesBroken,
+      mode: room.mode,
+      mySeat: seat,
+    });
+
+    const { state: newState, result } = gameReducer(room, {
+      type: 'PLAY_CARD',
+      playerId,
+      card,
+    });
+
+    if (result.success) {
+      rooms.set(roomCode, newState);
+      processSideEffects(roomCode, result.sideEffects || []);
+    }
+  } else if (room.phase === 'REDEAL_OFFER' && room.hand.redealOfferedTo === seat) {
+    // CPU always accepts redeal if offered
+    const { state: newState, result } = gameReducer(room, {
+      type: 'REQUEST_REDEAL',
+      playerId,
+      accept: true,
+    });
+
+    if (result.success) {
+      rooms.set(roomCode, newState);
+      processSideEffects(roomCode, result.sideEffects || []);
+    }
+  }
+}
+
+/**
+ * Get the partner seat for a given seat.
+ */
+function getPartnerSeat(seat: Seat): Seat {
+  const partners: Record<Seat, Seat> = { N: 'S', S: 'N', E: 'W', W: 'E' };
+  return partners[seat];
 }
 
 /**
@@ -289,6 +400,7 @@ function handleMessage(ws: WebSocket, message: ClientMessage): void {
         reconnectToken: generateToken(),
         ready: false,
         connected: true,
+        isCPU: false,
       };
 
       rooms.set(playerInfo.roomCode, newState);
@@ -327,6 +439,68 @@ function handleMessage(ws: WebSocket, message: ClientMessage): void {
         send(ws, {
           type: 'error',
           payload: { code: 'SEAT_ERROR', message: result.error || 'Failed to leave seat' },
+        });
+        return;
+      }
+
+      rooms.set(playerInfo.roomCode, newState);
+      processSideEffects(playerInfo.roomCode, result.sideEffects || []);
+      break;
+    }
+
+    case 'seat:addCpu': {
+      if (!playerInfo) {
+        send(ws, {
+          type: 'error',
+          payload: { code: 'NOT_IN_ROOM', message: 'Join a room first' },
+        });
+        return;
+      }
+
+      const room = rooms.get(playerInfo.roomCode);
+      if (!room) return;
+
+      const { state: newState, result } = gameReducer(room, {
+        type: 'ADD_CPU_TO_SEAT',
+        hostPlayerId: playerInfo.playerId,
+        seat: message.payload.seat,
+      });
+
+      if (!result.success) {
+        send(ws, {
+          type: 'error',
+          payload: { code: 'CPU_ERROR', message: result.error || 'Failed to add CPU' },
+        });
+        return;
+      }
+
+      rooms.set(playerInfo.roomCode, newState);
+      processSideEffects(playerInfo.roomCode, result.sideEffects || []);
+      break;
+    }
+
+    case 'seat:removeCpu': {
+      if (!playerInfo) {
+        send(ws, {
+          type: 'error',
+          payload: { code: 'NOT_IN_ROOM', message: 'Join a room first' },
+        });
+        return;
+      }
+
+      const room = rooms.get(playerInfo.roomCode);
+      if (!room) return;
+
+      const { state: newState, result } = gameReducer(room, {
+        type: 'REMOVE_CPU_FROM_SEAT',
+        hostPlayerId: playerInfo.playerId,
+        seat: message.payload.seat,
+      });
+
+      if (!result.success) {
+        send(ws, {
+          type: 'error',
+          payload: { code: 'CPU_ERROR', message: result.error || 'Failed to remove CPU' },
         });
         return;
       }

@@ -9,9 +9,12 @@ interface SeatDisplayProps {
   roomState: PublicRoomState;
   isCurrentTurn: boolean;
   isMySeat: boolean;
+  isHost?: boolean;
   onTakeSeat?: () => void;
   onLeaveSeat?: () => void;
   onReady?: (ready: boolean) => void;
+  onAddCpu?: () => void;
+  onRemoveCpu?: () => void;
 }
 
 const SEAT_LABELS: Record<Seat, string> = {
@@ -33,12 +36,16 @@ export function SeatDisplay({
   roomState,
   isCurrentTurn,
   isMySeat,
+  isHost = false,
   onTakeSeat,
   onLeaveSeat,
   onReady,
+  onAddCpu,
+  onRemoveCpu,
 }: SeatDisplayProps) {
   const seatState = roomState.seats[seat];
   const isOccupied = seatState.playerId !== null;
+  const isCPU = seatState.isCPU;
   const isInLobby = roomState.phase === 'LOBBY';
 
   // Get bid for this seat
@@ -61,6 +68,7 @@ export function SeatDisplay({
       {isOccupied ? (
         <>
           <div className="flex items-center justify-center gap-1">
+            {isCPU && <span className="text-[10px] text-purple-400">🤖</span>}
             <span className="font-semibold text-white text-xs sm:text-sm truncate max-w-[60px] sm:max-w-[80px]">
               {seatState.playerName || SEAT_LABELS[seat]}
             </span>
@@ -70,34 +78,54 @@ export function SeatDisplay({
           </div>
           <div className="text-[10px] sm:text-xs text-slate-400">
             {TEAM_LABELS[seat]}
-            {!seatState.connected && <span className="text-red-400 ml-1">(DC)</span>}
+            {!seatState.connected && !isCPU && <span className="text-red-400 ml-1">(DC)</span>}
           </div>
 
           {isInLobby && (
             <>
-              <div
-                className={`text-[10px] sm:text-xs mt-0.5 sm:mt-1 ${seatState.ready ? 'text-green-400' : 'text-yellow-400'}`}
-              >
-                {seatState.ready ? 'Ready' : 'Not Ready'}
-              </div>
-              {isMySeat && onReady && (
-                <div className="flex gap-1 mt-1">
-                  <button
-                    onClick={() => onReady(!seatState.ready)}
-                    className={`btn text-[10px] sm:text-xs px-2 py-1.5 flex-1 ${seatState.ready ? 'btn-secondary' : 'btn-success'}`}
-                  >
-                    {seatState.ready ? 'Unready' : 'Ready'}
-                  </button>
-                  {onLeaveSeat && !seatState.ready && (
+              {isCPU ? (
+                // CPU player controls
+                <>
+                  <div className="text-[10px] sm:text-xs mt-0.5 sm:mt-1 text-green-400">
+                    Ready
+                  </div>
+                  {isHost && onRemoveCpu && (
                     <button
-                      onClick={onLeaveSeat}
-                      className="btn btn-danger text-[10px] sm:text-xs px-2 py-1.5"
-                      title="Stand up from seat"
+                      onClick={onRemoveCpu}
+                      className="btn btn-danger text-[10px] sm:text-xs px-2 py-1.5 mt-1 w-full"
                     >
-                      Stand
+                      Remove
                     </button>
                   )}
-                </div>
+                </>
+              ) : (
+                // Human player controls
+                <>
+                  <div
+                    className={`text-[10px] sm:text-xs mt-0.5 sm:mt-1 ${seatState.ready ? 'text-green-400' : 'text-yellow-400'}`}
+                  >
+                    {seatState.ready ? 'Ready' : 'Not Ready'}
+                  </div>
+                  {isMySeat && onReady && (
+                    <div className="flex gap-1 mt-1">
+                      <button
+                        onClick={() => onReady(!seatState.ready)}
+                        className={`btn text-[10px] sm:text-xs px-2 py-1.5 flex-1 ${seatState.ready ? 'btn-secondary' : 'btn-success'}`}
+                      >
+                        {seatState.ready ? 'Unready' : 'Ready'}
+                      </button>
+                      {onLeaveSeat && !seatState.ready && (
+                        <button
+                          onClick={onLeaveSeat}
+                          className="btn btn-danger text-[10px] sm:text-xs px-2 py-1.5"
+                          title="Stand up from seat"
+                        >
+                          Stand
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}
@@ -114,13 +142,26 @@ export function SeatDisplay({
         <>
           <div className="text-[10px] sm:text-xs text-slate-400">{SEAT_LABELS[seat]}</div>
           <div className="text-slate-500 text-xs sm:text-sm">Empty</div>
-          {isInLobby && onTakeSeat && (
-            <button
-              onClick={onTakeSeat}
-              className="btn btn-primary text-[10px] sm:text-xs px-3 py-1.5 mt-1 w-full"
-            >
-              Sit
-            </button>
+          {isInLobby && (
+            <div className="flex flex-col gap-1 mt-1">
+              {onTakeSeat && (
+                <button
+                  onClick={onTakeSeat}
+                  className="btn btn-primary text-[10px] sm:text-xs px-3 py-1.5 w-full"
+                >
+                  Sit
+                </button>
+              )}
+              {isHost && onAddCpu && (
+                <button
+                  onClick={onAddCpu}
+                  className="btn btn-secondary text-[10px] sm:text-xs px-2 py-1 w-full"
+                  title="Add CPU player"
+                >
+                  + CPU
+                </button>
+              )}
+            </div>
           )}
         </>
       )}

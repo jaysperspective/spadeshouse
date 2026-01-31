@@ -67,6 +67,7 @@ export interface Player {
   reconnectToken: string;
   ready: boolean;
   connected: boolean;
+  isCPU: boolean; // true if this is a CPU-controlled player
 }
 
 // Seat state
@@ -165,12 +166,14 @@ export interface PublicRoomState {
   mode: GameMode;
   targetScore: TargetScore;
   phase: GamePhase;
+  hostPlayerId: string; // The room creator who can add CPU players
   seats: Record<Seat, {
     seat: Seat;
     playerId: string | null;
     playerName: string | null;
     ready: boolean;
     connected: boolean;
+    isCPU: boolean; // true if CPU-controlled
   }>;
   teamGameStates: Record<Team, TeamGameState>;
   hand: PublicHandState | null;

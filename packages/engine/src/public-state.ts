@@ -26,6 +26,7 @@ export function toPublicRoomState(state: RoomState): PublicRoomState {
       playerName: seatState.player?.name ?? null,
       ready: seatState.player?.ready ?? false,
       connected: seatState.player?.connected ?? false,
+      isCPU: seatState.player?.isCPU ?? false,
     };
   }
 
@@ -34,6 +35,7 @@ export function toPublicRoomState(state: RoomState): PublicRoomState {
     mode: state.mode,
     targetScore: state.targetScore,
     phase: state.phase,
+    hostPlayerId: state.hostPlayerId,
     seats: publicSeats,
     teamGameStates: state.teamGameStates,
     hand: state.hand ? toPublicHandState(state.hand) : null,

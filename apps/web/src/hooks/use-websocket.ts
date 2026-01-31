@@ -258,6 +258,26 @@ export function useWebSocket() {
     });
   }, [send]);
 
+  const addCpuToSeat = useCallback(
+    (seat: Seat) => {
+      send({
+        type: 'seat:addCpu',
+        payload: { seat },
+      });
+    },
+    [send]
+  );
+
+  const removeCpuFromSeat = useCallback(
+    (seat: Seat) => {
+      send({
+        type: 'seat:removeCpu',
+        payload: { seat },
+      });
+    },
+    [send]
+  );
+
   return {
     connect,
     disconnect,
@@ -271,5 +291,7 @@ export function useWebSocket() {
     playCard,
     nextHand,
     sendChat,
+    addCpuToSeat,
+    removeCpuFromSeat,
   };
 }

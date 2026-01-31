@@ -64,6 +64,20 @@ export const LeaveSeatSchema = z.object({
   payload: z.object({}),
 });
 
+export const AddCpuToSeatSchema = z.object({
+  type: z.literal('seat:addCpu'),
+  payload: z.object({
+    seat: SeatSchema,
+  }),
+});
+
+export const RemoveCpuFromSeatSchema = z.object({
+  type: z.literal('seat:removeCpu'),
+  payload: z.object({
+    seat: SeatSchema,
+  }),
+});
+
 export const SetReadySchema = z.object({
   type: z.literal('seat:ready'),
   payload: z.object({
@@ -115,6 +129,8 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   JoinRoomSchema,
   TakeSeatSchema,
   LeaveSeatSchema,
+  AddCpuToSeatSchema,
+  RemoveCpuFromSeatSchema,
   SetReadySchema,
   RequestRedealSchema,
   SubmitBidSchema,
@@ -160,6 +176,7 @@ export const PublicSeatStateSchema = z.object({
   playerName: z.string().nullable(),
   ready: z.boolean(),
   connected: z.boolean(),
+  isCPU: z.boolean(),
 });
 
 // Public hand state
@@ -193,6 +210,7 @@ export const PublicRoomStateSchema = z.object({
   mode: GameModeSchema,
   targetScore: TargetScoreSchema,
   phase: GamePhaseSchema,
+  hostPlayerId: z.string(),
   seats: z.object({
     N: PublicSeatStateSchema,
     E: PublicSeatStateSchema,

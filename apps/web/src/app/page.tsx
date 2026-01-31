@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useGameStore, useMySeat, useIsMyTurn, useMyTeam } from '@/store/game-store';
+import { useGameStore, useMySeat, useIsMyTurn, useMyTeam, useIsHost } from '@/store/game-store';
 import { useBadgeStore } from '@/store/badge-store';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { Lobby } from '@/components/Lobby';
@@ -42,11 +42,14 @@ export default function Home() {
     playCard,
     sendChat,
     nextHand,
+    addCpuToSeat,
+    removeCpuFromSeat,
   } = useWebSocket();
 
   const mySeat = useMySeat();
   const isMyTurn = useIsMyTurn();
   const myTeam = useMyTeam();
+  const isHost = useIsHost();
 
   const [showRules, setShowRules] = useState(false);
   const [showHandEnd, setShowHandEnd] = useState(false);
@@ -204,9 +207,12 @@ export default function Home() {
           <GameTable
             roomState={roomState}
             mySeat={mySeat}
+            isHost={isHost}
             onTakeSeat={takeSeat}
             onLeaveSeat={leaveSeat}
             onReady={setReady}
+            onAddCpu={addCpuToSeat}
+            onRemoveCpu={removeCpuFromSeat}
           />
         </div>
 

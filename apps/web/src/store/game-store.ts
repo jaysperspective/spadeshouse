@@ -121,3 +121,9 @@ export function useMyTeam(): 'NS' | 'EW' | null {
   if (!mySeat) return null;
   return mySeat === 'N' || mySeat === 'S' ? 'NS' : 'EW';
 }
+
+export function useIsHost(): boolean {
+  const { playerId, roomState } = useGameStore();
+  if (!playerId || !roomState) return false;
+  return roomState.hostPlayerId === playerId;
+}

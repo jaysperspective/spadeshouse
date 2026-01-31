@@ -235,6 +235,73 @@ export function gameReducer(
       break;
     }
 
+    case 'ADD_CPU_TO_SEAT': {
+      if (newState.phase !== 'LOBBY') {
+        error = 'Cannot add CPU during game';
+        break;
+      }
+
+      // Only host can add CPU
+      if (action.hostPlayerId !== newState.hostPlayerId) {
+        error = 'Only the host can add CPU players';
+        break;
+      }
+
+      // Check if seat is taken
+      if (newState.seats[action.seat].playerId !== null) {
+        error = 'Seat is already taken';
+        break;
+      }
+
+      // Create CPU player
+      const cpuNames: Record<Seat, string> = {
+        N: 'CPU North',
+        E: 'CPU East',
+        S: 'CPU South',
+        W: 'CPU West',
+      };
+      const cpuId = `cpu-${action.seat}-${Date.now()}`;
+
+      newState.seats[action.seat].playerId = cpuId;
+      newState.seats[action.seat].player = {
+        id: cpuId,
+        name: cpuNames[action.seat],
+        socketId: null,
+        reconnectToken: '',
+        ready: true, // CPU is always ready
+        connected: true,
+        isCPU: true,
+      };
+
+      sideEffects.push({ type: 'BROADCAST_STATE' });
+      break;
+    }
+
+    case 'REMOVE_CPU_FROM_SEAT': {
+      if (newState.phase !== 'LOBBY') {
+        error = 'Cannot remove CPU during game';
+        break;
+      }
+
+      // Only host can remove CPU
+      if (action.hostPlayerId !== newState.hostPlayerId) {
+        error = 'Only the host can remove CPU players';
+        break;
+      }
+
+      // Check if seat has a CPU
+      const seatState = newState.seats[action.seat];
+      if (!seatState.player?.isCPU) {
+        error = 'No CPU in this seat';
+        break;
+      }
+
+      newState.seats[action.seat].playerId = null;
+      newState.seats[action.seat].player = null;
+      sideEffects.push({ type: 'BROADCAST_STATE' });
+      break;
+    }
+
     case 'SET_READY': {
       if (newState.phase !== 'LOBBY') {
         error = 'Cannot change ready status during game';

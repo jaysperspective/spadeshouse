@@ -7,12 +7,15 @@ import { SeatDisplay } from './SeatDisplay';
 interface GameTableProps {
   roomState: PublicRoomState;
   mySeat: Seat | null;
+  isHost?: boolean;
   onTakeSeat: (seat: Seat) => void;
   onLeaveSeat: () => void;
   onReady: (ready: boolean) => void;
+  onAddCpu?: (seat: Seat) => void;
+  onRemoveCpu?: (seat: Seat) => void;
 }
 
-export function GameTable({ roomState, mySeat, onTakeSeat, onLeaveSeat, onReady }: GameTableProps) {
+export function GameTable({ roomState, mySeat, isHost = false, onTakeSeat, onLeaveSeat, onReady, onAddCpu, onRemoveCpu }: GameTableProps) {
   const currentBook = roomState.hand?.currentBook ?? [];
 
   // Position cards in center based on which seat played them
@@ -34,9 +37,12 @@ export function GameTable({ roomState, mySeat, onTakeSeat, onLeaveSeat, onReady 
           roomState={roomState}
           isCurrentTurn={roomState.hand?.currentTurn === 'N'}
           isMySeat={mySeat === 'N'}
+          isHost={isHost}
           onTakeSeat={!mySeat && roomState.phase === 'LOBBY' ? () => onTakeSeat('N') : undefined}
           onLeaveSeat={mySeat === 'N' && roomState.phase === 'LOBBY' ? onLeaveSeat : undefined}
           onReady={mySeat === 'N' ? onReady : undefined}
+          onAddCpu={onAddCpu ? () => onAddCpu('N') : undefined}
+          onRemoveCpu={onRemoveCpu ? () => onRemoveCpu('N') : undefined}
         />
       </div>
 
@@ -47,9 +53,12 @@ export function GameTable({ roomState, mySeat, onTakeSeat, onLeaveSeat, onReady 
           roomState={roomState}
           isCurrentTurn={roomState.hand?.currentTurn === 'S'}
           isMySeat={mySeat === 'S'}
+          isHost={isHost}
           onTakeSeat={!mySeat && roomState.phase === 'LOBBY' ? () => onTakeSeat('S') : undefined}
           onLeaveSeat={mySeat === 'S' && roomState.phase === 'LOBBY' ? onLeaveSeat : undefined}
           onReady={mySeat === 'S' ? onReady : undefined}
+          onAddCpu={onAddCpu ? () => onAddCpu('S') : undefined}
+          onRemoveCpu={onRemoveCpu ? () => onRemoveCpu('S') : undefined}
         />
       </div>
 
@@ -60,9 +69,12 @@ export function GameTable({ roomState, mySeat, onTakeSeat, onLeaveSeat, onReady 
           roomState={roomState}
           isCurrentTurn={roomState.hand?.currentTurn === 'W'}
           isMySeat={mySeat === 'W'}
+          isHost={isHost}
           onTakeSeat={!mySeat && roomState.phase === 'LOBBY' ? () => onTakeSeat('W') : undefined}
           onLeaveSeat={mySeat === 'W' && roomState.phase === 'LOBBY' ? onLeaveSeat : undefined}
           onReady={mySeat === 'W' ? onReady : undefined}
+          onAddCpu={onAddCpu ? () => onAddCpu('W') : undefined}
+          onRemoveCpu={onRemoveCpu ? () => onRemoveCpu('W') : undefined}
         />
       </div>
 
@@ -73,9 +85,12 @@ export function GameTable({ roomState, mySeat, onTakeSeat, onLeaveSeat, onReady 
           roomState={roomState}
           isCurrentTurn={roomState.hand?.currentTurn === 'E'}
           isMySeat={mySeat === 'E'}
+          isHost={isHost}
           onTakeSeat={!mySeat && roomState.phase === 'LOBBY' ? () => onTakeSeat('E') : undefined}
           onLeaveSeat={mySeat === 'E' && roomState.phase === 'LOBBY' ? onLeaveSeat : undefined}
           onReady={mySeat === 'E' ? onReady : undefined}
+          onAddCpu={onAddCpu ? () => onAddCpu('E') : undefined}
+          onRemoveCpu={onRemoveCpu ? () => onRemoveCpu('E') : undefined}
         />
       </div>
 

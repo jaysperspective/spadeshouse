@@ -19,6 +19,8 @@ export type GameAction =
   | { type: 'PLAYER_RECONNECT'; playerId: string; socketId: string }
   | { type: 'TAKE_SEAT'; playerId: string; seat: Seat }
   | { type: 'LEAVE_SEAT'; playerId: string }
+  | { type: 'ADD_CPU_TO_SEAT'; hostPlayerId: string; seat: Seat }
+  | { type: 'REMOVE_CPU_FROM_SEAT'; hostPlayerId: string; seat: Seat }
   | { type: 'SET_READY'; playerId: string; ready: boolean }
   | { type: 'START_GAME' }
   | { type: 'DEAL_CARDS'; seed?: number }
@@ -40,4 +42,5 @@ export type SideEffect =
   | { type: 'BROADCAST_STATE' }
   | { type: 'SEND_PRIVATE_HANDS' }
   | { type: 'SEND_HAND_END_RESULTS' }
-  | { type: 'GAME_OVER'; winner: 'NS' | 'EW'; reason: string };
+  | { type: 'GAME_OVER'; winner: 'NS' | 'EW'; reason: string }
+  | { type: 'PROCESS_CPU_TURN'; seat: Seat };
