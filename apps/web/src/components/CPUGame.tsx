@@ -401,118 +401,105 @@ function CPUGameSetup({ playerName: defaultPlayerName, onStart, onBack }: CPUGam
   const modes: GameMode[] = ['aceHigh', 'threeJokers', 'straightStruggle'];
 
   return (
-    <div className="min-h-screen min-h-[100dvh] flex items-center justify-center p-4">
-      <div className="bg-slate-800 rounded-2xl p-6 sm:p-8 max-w-md w-full">
-        <div className="flex items-center justify-between mb-6">
+    <div className="min-h-screen min-h-[100dvh] flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-slate-800 rounded-2xl p-4 sm:p-8 max-w-md w-full">
+        <div className="flex items-center justify-between mb-3 sm:mb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Play vs CPU</h1>
-            <p className="text-slate-400 text-sm">Practice against bots</p>
+            <h1 className="text-xl sm:text-3xl font-bold">Play vs CPU</h1>
+            <p className="text-slate-400 text-xs sm:text-sm">Practice against bots</p>
           </div>
           <button
             onClick={onBack}
-            className="btn btn-secondary btn-sm"
+            className="btn btn-secondary btn-sm text-xs sm:text-sm"
           >
             Back
           </button>
         </div>
 
-        {/* Progress indicator */}
-        <div className="mb-6 p-3 bg-slate-700/50 rounded-xl">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-slate-400">Badge Progress</span>
-            <span className="text-sm font-bold text-yellow-400">
+        {/* Progress indicator - compact on mobile */}
+        <div className="mb-3 sm:mb-6 p-2 sm:p-3 bg-slate-700/50 rounded-xl">
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <span className="text-xs sm:text-sm text-slate-400">Badge Progress</span>
+            <span className="text-xs sm:text-sm font-bold text-yellow-400">
               {cpuGamesCompleted}/{CPU_GAMES_REQUIRED} games
             </span>
           </div>
-          <div className="h-2 bg-slate-600 rounded-full overflow-hidden">
+          <div className="h-1.5 sm:h-2 bg-slate-600 rounded-full overflow-hidden">
             <div
               className="h-full bg-yellow-400 transition-all"
               style={{ width: `${Math.min(100, (cpuGamesCompleted / CPU_GAMES_REQUIRED) * 100)}%` }}
             />
           </div>
           {gamesRemaining > 0 && (
-            <p className="text-xs text-slate-400 mt-2">
-              Complete {gamesRemaining} more game{gamesRemaining !== 1 ? 's' : ''} for the Kitchen Table Badge
+            <p className="text-[10px] sm:text-xs text-slate-400 mt-1.5">
+              {gamesRemaining} more for Kitchen Table Badge
             </p>
           )}
         </div>
 
         {/* Player Name */}
-        <div className="mb-4">
-          <label className="block text-sm text-slate-400 mb-1.5">Your Name</label>
+        <div className="mb-3 sm:mb-4">
+          <label className="block text-xs sm:text-sm text-slate-400 mb-1">Your Name</label>
           <input
             type="text"
             value={playerName}
             onChange={(e) => setPlayerName(e.target.value)}
             placeholder="Enter your name"
-            className="input w-full"
+            className="input w-full text-sm sm:text-base py-2 sm:py-2.5"
             maxLength={20}
           />
         </div>
 
-        {/* Game Mode Selection */}
-        <div className="mb-4">
-          <label className="block text-sm text-slate-400 mb-2">Game Mode</label>
-          <div className="space-y-2">
+        {/* Game Mode Selection - Compact horizontal buttons */}
+        <div className="mb-3 sm:mb-4">
+          <label className="block text-xs sm:text-sm text-slate-400 mb-1.5">Game Mode</label>
+          <div className="flex gap-1.5 sm:gap-2">
             {modes.map((m) => {
               const config = getModeConfig(m);
               return (
-                <label
+                <button
                   key={m}
-                  className={`flex items-start p-3 rounded-xl cursor-pointer border-2 transition-all ${
+                  onClick={() => setMode(m)}
+                  className={`flex-1 py-2 sm:py-2.5 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-medium transition-all border-2 ${
                     mode === m
-                      ? 'border-blue-500 bg-blue-900/30'
-                      : 'border-slate-600 active:border-slate-500'
+                      ? 'border-blue-500 bg-blue-900/30 text-white'
+                      : 'border-slate-600 text-slate-300 active:border-slate-500'
                   }`}
                 >
-                  <input
-                    type="radio"
-                    name="mode"
-                    value={m}
-                    checked={mode === m}
-                    onChange={() => setMode(m)}
-                    className="mt-1 mr-3 w-4 h-4"
-                  />
-                  <div className="flex-1">
-                    <div className="font-semibold text-sm sm:text-base">{config.name}</div>
-                    <div className="text-xs sm:text-sm text-slate-400">{config.description}</div>
-                  </div>
-                </label>
+                  {config.name}
+                </button>
               );
             })}
           </div>
+          {/* Show selected mode description */}
+          <p className="text-xs text-slate-500 mt-1.5 text-center">
+            {getModeConfig(mode).description}
+          </p>
         </div>
 
         {/* Target Score */}
-        <div className="mb-6">
-          <label className="block text-sm text-slate-400 mb-2">Target Score</label>
-          <div className="flex gap-3">
+        <div className="mb-4 sm:mb-6">
+          <label className="block text-xs sm:text-sm text-slate-400 mb-1.5">Target Score</label>
+          <div className="flex gap-2 sm:gap-3">
             {([250, 500] as TargetScore[]).map((score) => (
-              <label
+              <button
                 key={score}
-                className={`flex-1 p-3 rounded-xl cursor-pointer text-center border-2 transition-all ${
+                onClick={() => setTargetScore(score)}
+                className={`flex-1 py-2 sm:py-3 rounded-xl text-center border-2 transition-all ${
                   targetScore === score
                     ? 'border-blue-500 bg-blue-900/30'
                     : 'border-slate-600 active:border-slate-500'
                 }`}
               >
-                <input
-                  type="radio"
-                  name="targetScore"
-                  value={score}
-                  checked={targetScore === score}
-                  onChange={() => setTargetScore(score)}
-                  className="sr-only"
-                />
-                <span className="font-bold text-lg">{score}</span>
-              </label>
+                <span className="font-bold text-base sm:text-lg">{score}</span>
+              </button>
             ))}
           </div>
         </div>
 
         <button
           onClick={() => onStart(mode, targetScore, playerName || 'You')}
-          className="btn btn-primary w-full text-lg"
+          className="btn btn-primary w-full text-base sm:text-lg py-2.5 sm:py-3"
         >
           Start Game
         </button>
